@@ -1,0 +1,21 @@
+body { font-family: 'Pretendard', sans-serif; background-color: #121212; color: #e0e0e0; padding: 20px; }
+h1 { text-align: center; color: #ffffff; }
+
+.table-container { overflow-x: auto; background-color: #1e1e1e; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+table { border-collapse: collapse; width: 100%; min-width: 600px; }
+th, td { border: 1px solid #333; padding: 12px; text-align: center; }
+
+/* 헤더 스타일 */
+th { background-color: #2d2d2d; color: #aaa; font-weight: 500; font-size: 0.9rem; }
+.sticky-col { position: sticky; left: 0; background-color: #252525; z-index: 10; min-width: 160px; }
+
+/* 말 정보 (이미지+이름) */
+.horse-info { display: flex; align-items: center; gap: 12px; justify-content: flex-start; padding-left: 8px; }
+.horse-icon { width: 40px; height: 40px; object-fit: contain; border-radius: 4px; background-color: #333; }
+.horse-name { font-weight: bold; font-size: 1rem; }
+
+/* 등수 스타일 */
+.rank { display: inline-block; width: 30px; height: 30px; line-height: 30px; border-radius: 50%; font-weight: bold; color: #000; }
+.rank-1 { background-color: #FFD700; box-shadow: 0 0 10px rgba(255,215,0,0.5); } /* 금 */
+.rank-2 { background-color: #C0C0C0; box-shadow: 0 0 10px rgba(192,192,192,0.5); } /* 은 */
+.rank-3 { background-color: #CD7F32; box-shadow: 0 0 10px rgba(205,127,50,0.5); }  /* 동 */

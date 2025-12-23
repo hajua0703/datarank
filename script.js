@@ -42,7 +42,7 @@ function renderTable(data) {
             <tr>
                 <td class="sticky-col">
                     <div class="horse-info">
-                        <img src="horse${h}.png" alt="Horse ${h}" class="horse-icon" onerror="this.src='https://via.placeholder.com/40?text=H'">
+                        <img src="말${h}.png" alt="Horse ${h}" class="horse-icon" onerror="this.src='https://via.placeholder.com/40?text=H'">
                         <span class="horse-name">${h}번 말</span>
                     </div>
                 </td>`;
