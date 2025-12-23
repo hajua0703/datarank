@@ -1,4 +1,3 @@
-// 1. 본인의 Supabase 정보로 꼭 교체하세요!
 const SUPABASE_URL = 'https://zwgznwoywgvlyujbmdwx.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp3Z3pud295d2d2bHl1amJtZHd4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU5NTEyNTMsImV4cCI6MjA4MTUyNzI1M30.m_7wSDQZLNFgJzY5Xq4HcJbCJmRyp9D4s4wTWtNp0Mc';
 const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -10,16 +9,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
 async function fetchAndRender() {
     try {
+        // round 기준 내림차순 정렬하여 최신순으로 가져옴
         const { data, error } = await _supabase
             .from('race_results')
             .select('*')
-            .order('round_no', { ascending: true });
+            .order('round', { ascending: false });
 
         if (error) throw error;
-        renderTable(data || []);
+
+        // 최신 10개 라운드만 추출
+        const latestTenRounds = data ? data.slice(0, 10) : [];
+        renderTable(latestTenRounds);
     } catch (err) {
         console.error('데이터 로드 실패:', err);
-        renderTable([]); // 에러가 나도 빈 배열로 표의 틀은 그리도록 함
+        renderTable([]);
     }
 }
 
@@ -27,36 +30,36 @@ function renderTable(data) {
     const headerRow = document.getElementById('header-row');
     const tableBody = document.querySelector('#result-table tbody');
 
-    // 데이터가 있으면 최대 라운드 계산, 없으면 0
-    const maxRound = data.length > 0 ? Math.max(...data.map(d => d.round_no)) : 0;
-
-    // 1. 헤더: 라운드 표시 (데이터가 없어도 기본 헤더는 유지)
+    // 1. 헤더 생성: 최신순으로 정렬된 10개 라운드만 표시
     headerRow.innerHTML = '<th class="sticky-col">말 정보 / 라운드</th>';
-    for (let r = 1; r <= maxRound; r++) {
-        headerRow.innerHTML += `<th>Rd ${r}</th>`;
-    }
+    data.forEach(row => {
+        headerRow.innerHTML += `<th>${row.round}R</th>`;
+    });
 
-    // 2. 1~10번 말 행 무조건 생성
+    // 2. 1~10번 말 행 생성
     let bodyHtml = '';
-    for (let h = 1; h <= 10; h++) {
+    for (let horseNum = 1; horseNum <= 10; horseNum++) {
         bodyHtml += `
             <tr>
                 <td class="sticky-col">
                     <div class="horse-info">
-                        <img src="말${h}.png" alt="말 ${h}" class="horse-icon" onerror="this.src='https://via.placeholder.com/40?text=?'">
-                        <span class="horse-name">${h}번 말</span>
+                        <img src="말${horseNum}.png" alt="말 ${horseNum}" class="horse-icon" onerror="this.src='https://via.placeholder.com/40?text=${horseNum}'">
+                        <span class="horse-name">${horseNum}번 말</span>
                     </div>
                 </td>`;
 
-        // 라운드 결과 채우기
-        for (let r = 1; r <= maxRound; r++) {
-            const result = data.find(d => d.round_no === r && d.horse_no === h);
-            if (result && result.rank <= 3) {
-                bodyHtml += `<td><span class="rank rank-${result.rank}">${result.rank}</span></td>`;
+        // 화면에 있는 10개 라운드에 대해서만 등수 확인
+        data.forEach(row => {
+            const rankArray = row.ranks.split(',').map(id => id.trim());
+            const horseRank = rankArray.findIndex(id => Number(id) === horseNum) + 1;
+
+            // 1~3등만 표시
+            if (horseRank >= 1 && horseRank <= 3) {
+                bodyHtml += `<td><span class="rank rank-${horseRank}">${horseRank}</span></td>`;
             } else {
                 bodyHtml += `<td></td>`;
             }
-        }
+        });
         bodyHtml += `</tr>`;
     }
     tableBody.innerHTML = bodyHtml;
@@ -65,8 +68,7 @@ function renderTable(data) {
 function subscribeToChanges() {
     _supabase
         .channel('public:race_results')
-        .on('postgres_changes', { event: 'INSERT', table: 'race_results' }, (payload) => {
-            console.log('새 결과 도착:', payload.new);
+        .on('postgres_changes', { event: 'INSERT', table: 'race_results', schema: 'public' }, (payload) => {
             fetchAndRender(); 
         })
         .subscribe();
